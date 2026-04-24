@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>onlineShop - Home</title>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Additional styles for login section */
+        .login-section {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .login-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .login-section input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .login-section button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .login-section button:hover {
+            background: #5a67d8;
+        }
+        
+        .error-message {
+            color: #e53e3e;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .success-message {
+            color: #38a169;
+            margin-top: 10px;
+        }
+        
+        .register-link {
+            margin-top: 20px;
+            color: #667eea;
+            cursor: pointer;
+        }
+        
+        .register-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+   <!-- <nav class="navbar">
+        <div class="nav-left">
+            <label for="sidebar-toggle" class="menu-icon material-symbols-outlined">menu</label>
+        </div>
+        
+        <div class="nav-center">
+            <div class="searchbar">
+                <input type="search" placeholder="Search product">
+                <button class="search-btn">
+                    <img src="icons/search.svg">
+                </button>
+            </div>
+            <button class="mic-btn">
+                <img src="icons/mic.svg">
+            </button>
+        </div>
+        
+        <div class="nav-right">
+            <span class="material-symbols-outlined icon">person</span>
+            <span class="material-symbols-outlined icon">shopping_cart</span>
+            <span id="userEmail"></span>
+        </div>
+    </nav>
+    -->
+
+    <!-- Login Section -->
+    <div class="login-section" id="loginSection">
+        <h2>Welcome to ShopNice!</h2>
+        <p style="color: #666; margin-bottom: 20px;">Please login to continue to your cart</p>
+        
+        <input type="email" id="loginEmail" placeholder="Email Address">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+        
+        <div class="register-link" onclick="showRegister()">
+            Don't have an account? Register here
+        </div>
+        
+        <div id="message" class="error-message"></div>
+    </div>
+
+    <!-- Register Section (hidden by default) -->
+    <div class="login-section" id="registerSection" style="display: none;">
+        <h2>Create Account 📝</h2>
+        
+        <input type="email" id="registerEmail" placeholder="Email Address">
+        <input type="password" id="registerPassword" placeholder="Password (min 6 characters)">
+        <button onclick="register()">Register</button>
+        
+        <div class="register-link" onclick="showLogin()">
+            Already have an account? Login here
+        </div>
+        
+        <div id="registerMessage" class="error-message"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBW9E-xzoXuxfM7xKLjrB35DYzoMtEEmdw",
+            authDomain: "shopnice-4f83b.firebaseapp.com",
+            projectId: "shopnice-4f83b",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Check if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in, redirect to cart.html
+                window.location.href = "cart.html";
+            }
+        });
+
+        // Make functions global
+        window.login = async function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const messageDiv = document.getElementById('message');
+            
+            if (!email || !password) {
+                messageDiv.textContent = 'Please enter both email and password';
+                return;
+            }
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Redirect will happen automatically via onAuthStateChanged
+            } catch (error) {
+                messageDiv.textContent = 'Login failed: ' + error.message;
+            }
+        }
+        
+        window.register = async function() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const messageDiv = document.getElementById('registerMessage');
+            
+            if (!email || !password) {
+                messageDiv.textContent = 'Please enter both email and password';
+                return;
+            }
+            
+            if (password.length < 6) {
+                messageDiv.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+            
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                messageDiv.style.color = '#38a169';
+                messageDiv.textContent = 'Account created successfully! Redirecting...';
+                setTimeout(() => {
+                    window.location.href = "cart.html";
+                }, 1500);
+            } catch (error) {
+                messageDiv.textContent = 'Registration failed: ' + error.message;
+            }
+        }
+        
+        window.showRegister = function() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('registerSection').style.display = 'block';
+        }
+        
+        window.showLogin = function() {
+            document.getElementById('registerSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
